@@ -1,5 +1,5 @@
 <?php
-$conexion = mysqli_connect("localhost", "pasamar", "1111", "jardineria");
+$conexion = mysqli_connect("localhost", "pasamar", "1234", "jardineria");
 ?>
 
 <!DOCTYPE html>
@@ -28,9 +28,40 @@ $conexion = mysqli_connect("localhost", "pasamar", "1111", "jardineria");
         echo "No hay gamas disponibles.";
     }
     echo "<br><br>";
-    echo "<form method='post' action='Hoja3.1_Ej2_Resultado.php'>
-                <input type='submit' value='Consultar productos'>
-                </form>";
+    if($fila['gama'] === 'Aromáticas'){
+        $aromaticas = "SELECT DISTINCT CodigoProducto, Nombre, CantidadEnStock FROM productos";
+    }
+    ?>
+    <div id="tabla">
+    <table border="1">
+        <tr>
+            <th>Código producto</th>
+            <th>Nombre</th>
+            <th>CantidadEnStock</th>
+        </tr>
+
+        <?php
+        $conexion = mysqli_connect("localhost", "pasamar", "1234", "jardineria");
+        if ($conexion) {
+            $resultado = mysqli_query($conexion, "SELECT * FROM productos");
+            $fila = mysqli_fetch_assoc($resultado);
+            foreach ($resultado as $fila) {
+                echo "<tr>";
+                echo "<td>" . $fila['CodigoProducto'] . "</td>";
+                echo "<td>" . $fila['Nombre'] . "</td>";
+                echo "<td>" . $fila['CantidadEnStock'] . "</td>";
+                echo "</tr>";
+            }
+
+            mysqli_close($conexion);
+            
+        }
+        ?>
+    <?php
+    echo 
+    "<form method='post' action='$aromaticas'>
+        <input type='submit' value='Consultar productos'>
+    </form>";
 
 
 
