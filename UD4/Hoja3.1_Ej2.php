@@ -1,6 +1,10 @@
 <?php
 $conexion = mysqli_connect("localhost", "pasamar", "1234", "jardineria");
+if (!$conexion) {
+    die("Error de conexión: " . mysqli_connect_error());
+}
 ?>
+
 
 <!DOCTYPE html>
 <html lang="en">
@@ -9,64 +13,82 @@ $conexion = mysqli_connect("localhost", "pasamar", "1234", "jardineria");
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Ejercicio 2</title>
+    <style>
+        #tabla {
+            margin: auto;
+            width: fit-content;
+        }
+
+        table {
+            border-collapse: collapse;
+        }
+
+        #mensajeGama {
+            color: #3c7ee0ff;
+        }
+    </style>
 </head>
 
 <body>
-    <h1>Consulta de productos por gama</h1>
-    Elige una de las gamas de productos disponible:
+    <h1>Consulta de productos</h1>
+    <form method="post">
+        <label>Elige una de las gamas de productos disponible:</label>
+        <select name="gama">
+            <?php
+            $consulta = "SELECT DISTINCT gama FROM gamasProductos";
+            $resultado = mysqli_query($conexion, $consulta);
+            while ($fila = mysqli_fetch_assoc($resultado)) {
+                echo "<option value='" . $fila['gama'] . "'>" . $fila['gama'] . "</option>";
+            }
+            ?>
+        </select>
+        <input type="submit" value="Consultar productos">
+    </form>
+
     <?php
-    $consulta = "SELECT DISTINCT gama FROM gamasProductos";
-    $resultado = mysqli_query($conexion, $consulta);
+    if (isset($_POST['gama'])) {
 
-    if (mysqli_num_rows($resultado) > 0) {
-        echo "<select name='gamaProducto'>";
-        while ($fila = mysqli_fetch_assoc($resultado)) {
-            echo "<option value='" . $fila['gama'] . "'>" . $fila['gama'] . "</option>";
-        }
-        echo "</select>";
-    } else {
-        echo "No hay gamas disponibles.";
-    }
-    echo "<br><br>";
-    if($fila['gama'] === 'Aromáticas'){
-        $aromaticas = "SELECT DISTINCT CodigoProducto, Nombre, CantidadEnStock FROM productos";
-    }
-    ?>
-    <div id="tabla">
-    <table border="1">
-        <tr>
-            <th>Código producto</th>
-            <th>Nombre</th>
-            <th>CantidadEnStock</th>
-        </tr>
+        $gamaSeleccionada = $_POST['gama'];
 
-        <?php
-        $conexion = mysqli_connect("localhost", "pasamar", "1234", "jardineria");
-        if ($conexion) {
-            $resultado = mysqli_query($conexion, "SELECT * FROM productos");
-            $fila = mysqli_fetch_assoc($resultado);
-            foreach ($resultado as $fila) {
+        echo "<p id='mensajeGama'><b>Productos de la gama $gamaSeleccionada - Fecha: 20/11/2025</b></p>";
+
+        $sqlProductos = "
+            SELECT CodigoProducto, Nombre, CantidadEnStock 
+            FROM productos 
+            WHERE Gama = '$gamaSeleccionada'
+            ORDER BY Nombre
+            ";
+
+        $resultadoProductos = mysqli_query($conexion, $sqlProductos);
+
+        // Si no hay productos → solo mensaje
+        if (mysqli_num_rows($resultadoProductos) === 0) {
+            echo "<p>Actualmente no existe ningún producto dado de alta en esta gama</p>";
+        } else {
+            // Si sí hay productos → mostrar tabla
+            echo "<div id='tabla'>";
+            echo "<table border='1'>
+                    <tr>
+                        <th>Código producto</th>
+                        <th>Nombre</th>
+                        <th>Cantidad en stock</th>
+                    </tr>";
+
+            while ($producto = mysqli_fetch_assoc($resultadoProductos)) {
                 echo "<tr>";
-                echo "<td>" . $fila['CodigoProducto'] . "</td>";
-                echo "<td>" . $fila['Nombre'] . "</td>";
-                echo "<td>" . $fila['CantidadEnStock'] . "</td>";
+                echo "<td>" . $producto['CodigoProducto'] . "</td>";
+                echo "<td>" . $producto['Nombre'] . "</td>";
+                echo "<td>" . $producto['CantidadEnStock'] . "</td>";
                 echo "</tr>";
             }
 
-            mysqli_close($conexion);
-            
+            echo "</table></div>";
         }
-        ?>
-    <?php
-    echo 
-    "<form method='post' action='$aromaticas'>
-        <input type='submit' value='Consultar productos'>
-    </form>";
-
-
+    }
 
     mysqli_close($conexion);
     ?>
+
 </body>
 
 </html>
