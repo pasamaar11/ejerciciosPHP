@@ -46,7 +46,7 @@
                 }
             ?>
         </div>
-        <?php 
+        <?php
             mysqli_close($conexion);
         ?>
     </body>

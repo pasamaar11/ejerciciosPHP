@@ -85,7 +85,7 @@ if (!$conexion) {
             echo "</table></div>";
         }
     }
-
+    echo "<a href = http://localhost/PHP/ejerciciosPHP/UD4/Hoja3.1_Ej2.php>Realizar una nueva consulta</a>";
     mysqli_close($conexion);
     ?>
 

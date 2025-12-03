@@ -59,7 +59,7 @@ if ($conexion) {
                 echo "<td>" . $fila['NombreContacto'] . "</td>";
                 echo "</tr>";
             }
-
+            
             mysqli_close($conexion);
             
         }
