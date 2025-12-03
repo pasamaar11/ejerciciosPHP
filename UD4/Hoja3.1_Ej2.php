@@ -1,10 +1,10 @@
 <?php
 $conexion = mysqli_connect("localhost", "pasamar", "1234", "jardineria");
-
 if (!$conexion) {
-    die("Fallo en la conexion a la base de datos: " . mysqli_connect_error());
+    die("Error de conexión: " . mysqli_connect_error());
 }
 ?>
+
 
 <!DOCTYPE html>
 <html lang="en">
@@ -14,76 +14,81 @@ if (!$conexion) {
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Ejercicio 2</title>
     <style>
-        h2{
-            color: #0c86f8ff;
+        #tabla {
+            margin: auto;
+            width: fit-content;
+        }
+
+        table {
+            border-collapse: collapse;
+        }
+
+        #mensajeGama {
+            color: #3c7ee0ff;
         }
     </style>
 </head>
 
 <body>
-    <h1>Consulta de productos por gama</h1>
-    <form>
-        Elige una de las gamas de productos disponible:
-        <?php
-        $consulta = "SELECT DISTINCT gama FROM gamasProductos ORDER BY gama";
-        $resultado = mysqli_query($conexion, $consulta);
-
-        if (mysqli_num_rows($resultado) > 0) {
-            echo "<select name='gamaProducto'>";
+    <h1>Consulta de productos</h1>
+    <form method="post">
+        <label>Elige una de las gamas de productos disponible:</label>
+        <select name="gama">
+            <?php
+            $consulta = "SELECT DISTINCT gama FROM gamasProductos";
+            $resultado = mysqli_query($conexion, $consulta);
             while ($fila = mysqli_fetch_assoc($resultado)) {
                 echo "<option value='" . $fila['gama'] . "'>" . $fila['gama'] . "</option>";
             }
-            echo "</select>";
-        } else {
-            echo "No hay gamas disponibles.";
-        }
-        ?>
-        <input type="submit" value="Consultar Productos">
+            ?>
+        </select>
+        <input type="submit" value="Consultar productos">
     </form>
 
-    <br />
-    <div id="tabla">
-        <?php
-        $gamaSeleccionada = "";
-        if (isset($_GET['gamaProducto'])) {
-            // Asignar el valor capturado del formulario a la variable
-            $gamaSeleccionada = mysqli_real_escape_string($conexion, $_GET['gamaProducto']);
-        }
-        if ($gamaSeleccionada) {
-            echo "<h2>Productos de la gama " . htmlspecialchars($gamaSeleccionada) . " - Fecha: 02/12/2025 </h2>";
+    <?php
+    if (isset($_POST['gama'])) {
 
-            $consulta = "SELECT CodigoProducto, Nombre, CantidadEnStock
-                        FROM productos
-                        WHERE Gama = '$gamaSeleccionada'
-                        ORDER BY Nombre";
-            $resultado = mysqli_query($conexion, $consulta);
+        $gamaSeleccionada = $_POST['gama'];
 
-            if (mysqli_num_rows($resultado) > 0) {
-                echo "<table border = '1'>";
-                echo "<tr>
-                        <th>Código Producto</th>
+        echo "<p id='mensajeGama'><b>Productos de la gama $gamaSeleccionada - Fecha: 20/11/2025</b></p>";
+
+        $sqlProductos = "
+            SELECT CodigoProducto, Nombre, CantidadEnStock 
+            FROM productos 
+            WHERE Gama = '$gamaSeleccionada'
+            ORDER BY Nombre
+            ";
+
+        $resultadoProductos = mysqli_query($conexion, $sqlProductos);
+
+        // Si no hay productos → solo mensaje
+        if (mysqli_num_rows($resultadoProductos) === 0) {
+            echo "<p>Actualmente no existe ningún producto dado de alta en esta gama</p>";
+        } else {
+            // Si sí hay productos → mostrar tabla
+            echo "<div id='tabla'>";
+            echo "<table border='1'>
+                    <tr>
+                        <th>Código producto</th>
                         <th>Nombre</th>
-                        <th>CantidadEnStock</th>
+                        <th>Cantidad en stock</th>
                     </tr>";
 
-                while ($fila = mysqli_fetch_assoc($resultado)) {
-                    echo "<tr>";
-                        echo "<td>" . htmlspecialchars($fila['CodigoProducto']) . "</td>";
-                        echo "<td>" . htmlspecialchars($fila['Nombre']) . "</td>";
-                        echo "<td>" . htmlspecialchars($fila['CantidadEnStock']) . "</td>";
-                    echo "</tr>";
-                }
-                echo "</table>";
-            } else {
-                echo "<h2>Actualmente no existe ningún producto dado de alta en esta gama</h2>";
+            while ($producto = mysqli_fetch_assoc($resultadoProductos)) {
+                echo "<tr>";
+                echo "<td>" . $producto['CodigoProducto'] . "</td>";
+                echo "<td>" . $producto['Nombre'] . "</td>";
+                echo "<td>" . $producto['CantidadEnStock'] . "</td>";
+                echo "</tr>";
             }
-        }
-        ?>
-    </div>
 
-    <?php
-        mysqli_close($conexion);
+            echo "</table></div>";
+        }
+    }
+
+    mysqli_close($conexion);
     ?>
+
 </body>
 
 </html>
