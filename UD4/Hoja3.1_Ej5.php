@@ -1,7 +1,79 @@
 <?php
-    $conexion = mysqli_connect("localhost", "pasamar", "1234", "jardineria");
+    $conexion = mysqli_connect("127.0.0.1: 3307", "pasamar", "1234", "jardineria");
     if (!$conexion) {
         die("ERROR: No se pudo conectar con la base de datos" . mysqli_connect_error());
+}
+
+if(isset($_REQUEST['enviar'])){
+    //con esto se cargan las variables del formulario en variables locales
+    extract($_REQUEST);
+    // 1. Sanear los datos (Crucial para prevenir inyecciones SQL)
+        $Nombre = mysqli_real_escape_string($conexion, $Nombre);
+        $NombreContacto = mysqli_real_escape_string($conexion, $NombreContacto);
+        $ApellidoContacto = mysqli_real_escape_string($conexion, $ApellidoContacto);
+        // La variable 'Tlf' se ha corregido en el HTML.
+        $Tlf = mysqli_real_escape_string($conexion, $Tlf); 
+        $fax = mysqli_real_escape_string($conexion, $fax);
+        $Direccion1 = mysqli_real_escape_string($conexion, $Direccion1);
+        $Direccion2 = mysqli_real_escape_string($conexion, $Direccion2);
+        $Ciudad = mysqli_real_escape_string($conexion, $Ciudad);
+        $Region = mysqli_real_escape_string($conexion, $Region);
+        $Pais = mysqli_real_escape_string($conexion, $Pais);
+        $CodigoPostal = mysqli_real_escape_string($conexion, $CodigoPostal);
+        
+        // Los campos numéricos se tratan como tales (el límite de crédito puede tener decimales)
+        $LimiteCredito = (float)$LimiteCredito; 
+        
+        // 2. Extraer el CodigoEmpleado numérico
+        // El CodigoEmpleado viene como "1 - Nombre Apellido", extraemos solo el '1'
+        $codigoEmpleado_partes = explode(' - ', $CodigoEmpleado); 
+        $CodigoEmpleadoRepVentas = (int)$codigoEmpleado_partes[0];
+
+        // 3. Obtener el siguiente CodigoCliente disponible
+        $consulta_max_id = "SELECT MAX(CodigoCliente) AS MaxID FROM clientes";
+        $resultado_max_id = mysqli_query($conexion, $consulta_max_id);
+        $fila_max_id = mysqli_fetch_assoc($resultado_max_id);
+        $CodigoCliente = $fila_max_id['MaxID'] + 1;
+        
+        // 4. Crear la consulta de inserción
+        $query_insert = "INSERT INTO clientes (
+            CodigoCliente, 
+            NombreCliente, 
+            NombreContacto, 
+            ApellidoContacto, 
+            Telefono, 
+            Fax, 
+            LineaDireccion1, 
+            LineaDireccion2, 
+            Ciudad, 
+            Region, 
+            Pais, 
+            CodigoPostal, 
+            CodigoEmpleadoRepVentas, 
+            LimiteCredito
+        ) VALUES (
+            $CodigoCliente, 
+            '$Nombre', 
+            '$NombreContacto', 
+            '$ApellidoContacto', 
+            '$Tlf', 
+            '$fax', 
+            '$Direccion1', 
+            '$Direccion2', 
+            '$Ciudad', 
+            '$Region', 
+            '$Pais', 
+            '$CodigoPostal', 
+            $CodigoEmpleadoRepVentas, 
+            $LimiteCredito
+        )";
+
+        // 5. Ejecutar la consulta
+        if (mysqli_query($conexion, $query_insert)) {
+            echo "<p style='color: green; font-weight: bold;'>✅ Cliente insertado correctamente con Código: $CodigoCliente</p>";
+        } else {
+            echo "<p style='color: red; font-weight: bold;'>❌ ERROR al insertar cliente: " . mysqli_error($conexion) . "</p>";
+        }
 }
 ?>
 
@@ -28,7 +100,7 @@
             <br/>
             <label id="NombreContacto">Nombre del contacto: </label>
             <input type="text" name="NombreContacto" id="NombreContacto">
-            <br/>
+            <br
             <label id="ApellidoContacto">Apellido del contacto: </label>
             <input type="text" name="ApellidoContacto" id="ApellidoContacto">
             <br/>
@@ -72,7 +144,7 @@
                 ?>
             </select>
             <br/><br/>
-            <input type="submit" value="Insertar nuevo empleado">
+            <input type="submit" name="enviar" value="Insertar nuevo empleado">
         </form>
     </div>
 </body>

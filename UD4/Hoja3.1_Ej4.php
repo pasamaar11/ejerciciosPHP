@@ -1,5 +1,6 @@
 <?php
-    $conexion = mysqli_connect("localhost","pasamar","1234","jardineria");
+//cambiar a localhost en clase
+    $conexion = mysqli_connect("127.0.0.1: 3307","pasamar","1234","jardineria");
     if(!$conexion){
         die("ERROR: No se pudo conectar con la base de datos correctamente" . mysqli_connect_error());
     }
